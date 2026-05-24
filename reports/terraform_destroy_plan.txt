@@ -1,14 +1,5 @@
-Terraform destroy plan was checked for the local demo infra.
 
-Command:
-terraform plan -destroy -out=tfdestroy
-terraform show -no-color tfdestroy > ../reports/terraform_destroy_plan.txt
+No changes. No objects need to be destroyed.
 
-Current result:
-- no applied local_file resources in state
-- no objects need to be destroyed right now
-
-Destroy intent if resources were applied:
-- remove demo local_file resources
-- keep source code and reports
-- do not touch data outside artifact_root
+Either you have not created any objects yet or the existing objects were
+already deleted outside of Terraform.

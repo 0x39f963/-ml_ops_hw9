@@ -23,10 +23,23 @@ jobs:
           pip install -r requirements.txt
 
       - name: Python compile
-        run: python -m compileall -q src dags scripts
+        run: python -m compileall -q src dags
 
-      - name: Generate demo evidence
-        run: PYTHONPATH=. python scripts/generate_demo_artifacts.py
+      - name: Model smoke check
+        run: |
+          PYTHONPATH=. python - <<'PY'
+          from src.inventory_data import make_demo_inventory, validate_inventory
+          from src.inventory_train import train_model
+          from src.inventory_evaluate import evaluate_model, compare_with_baseline
+
+          batch_path = make_demo_inventory()
+          report = validate_inventory(batch_path)
+          assert report["status"] == "pass"
+          train_model(batch_path)
+          metrics = evaluate_model()
+          assert metrics["new_mape"] <= 15
+          assert compare_with_baseline() in {"register_model", "skip_deploy"}
+          PY
 
   terraform:
     runs-on: ubuntu-latest

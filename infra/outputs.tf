@@ -9,3 +9,7 @@ output "mlflow_manifest_path" {
 output "airflow_manifest_path" {
   value = local_file.airflow_manifest.filename
 }
+
+output "pipeline_contract_manifest_path" {
+  value = local_file.pipeline_contract_manifest.filename
+}

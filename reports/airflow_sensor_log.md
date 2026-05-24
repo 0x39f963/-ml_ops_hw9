@@ -2,10 +2,10 @@
 
 - task_id: `wait_for_inventory_batch`
 - local demo path: `data/demo_inventory_batch.csv`
-- production switch: `DZ9_USE_S3_SENSOR=1`
-- production sensor: `S3KeySensor(bucket=inventory-batches, key=incoming/{{ ds }}/inventory.csv)`
-- S3 evidence: `s3://inventory-batches/incoming/2026-05-24/inventory.csv`
-- log line: `Poking for key : s3://inventory-batches/incoming/2026-05-24/inventory.csv`
-- result: `Success criteria met. Exiting.`
+- active training path: `data/current_inventory_batch.csv`
+- S3 switch: `DZ9_USE_S3_SENSOR=1`
+- S3 sensor: `S3KeySensor(bucket=inventory-batches, key=incoming/{{ ds }}/inventory.csv)`
+- S3 load: `S3Hook.get_key(...).download_file(data/current_inventory_batch.csv)`
+- result: sensor нашел файл, load task скопировал/скачал batch в рабочий путь
 
-**Вывод:** в учебном запуске можно использовать локальный файл. В S3-режиме тот же task ждет объект в bucket `inventory-batches`.
+**Вывод:** sensor не просто отмечает наличие файла. Этот же batch становится входом для validation/train.

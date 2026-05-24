@@ -9,10 +9,13 @@ __pycache__/
 *.tfstate
 *.tfstate.*
 *.tfplan
+tfplan
+tfdestroy
 crash.log
 crash.*.log
 
 .infra_artifacts/
+data/current_inventory_batch.csv
 models/*.joblib
 mlruns/
 airflow_home/

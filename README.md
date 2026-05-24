@@ -15,7 +15,7 @@ MDD фиксирует решение через статистику
 
 ## 1. Что сделано
 
-- финальный ноутбук: [HW9_Design_НовиковИван.ipynb](HW9_Design_НовиковИван.ipynb)
+- финальный ноутбук: [HW9_Design_НовиковИван_last.ipynb](HW9_Design_НовиковИван_last.ipynb)
 - Airflow DAG: [dags/inventory_retrain_dag.py](dags/inventory_retrain_dag.py)
 - код модели: [src/](src/)
 - synthetic data: [data/](data/)
@@ -42,7 +42,7 @@ MDD фиксирует решение через статистику
 ```text
 DZ9/
 |-- README.md
-|-- HW9_Design_НовиковИван.ipynb
+|-- HW9_Design_НовиковИван_last.ipynb
 |-- requirements.txt
 |-- docker-compose.yml
 |-- dags/
@@ -61,6 +61,7 @@ DZ9/
 |-- reports/
 |   |-- airflow_sensor_log.md
 |   |-- airflow_task_logs.md
+|   |-- validation_gate_log.md
 |   |-- model_metrics.md
 |   |-- terraform_plan.txt
 |   |-- terraform_destroy_plan.txt
@@ -119,12 +120,22 @@ wait_for_inventory_batch
 Что важно:
 
 - `wait_for_inventory_batch` ждет новый batch
+- `load_inventory_data` берет именно найденный batch и кладет его в `data/current_inventory_batch.csv`
 - `validate_inventory_data` проверяет контракт колонок и простые правила
+- если validation status = `fail`, task падает через `ValueError` и `train_model` не стартует
 - `train_model` обучает простую regression model
 - `evaluate_model` считает `MAPE` и `RMSE`
 - `compare_with_baseline` решает ветку через `BranchPythonOperator`
 - `register_model` пишет факт обучения в локальный registry
 - `skip_deploy` оставляет старую модель, если новая хуже
+- `finish` склеивает ветки через `none_failed_min_one_success`
+
+**Что добавил после проверки:**
+
+- S3/File sensor теперь не просто сигналит о наличии файла
+- `load_inventory_data` копирует локальный файл или скачивает S3-файл через `S3Hook`
+- validation теперь реально стопает обучение плохого batch
+- join после branch поправлен через trigger rule, чтобы успешная ветка нормально закрывала DAG
 
 ![успешный Airflow run](screenshots/19.png)
 
@@ -150,6 +161,7 @@ MinIO тут играет роль локального S3:
 ```text
 bucket: inventory-batches
 key: incoming/2026-05-24/inventory.csv
+рабочая копия: data/current_inventory_batch.csv
 ```
 
 ![batch в MinIO](screenshots/11.png)
@@ -164,13 +176,14 @@ key: incoming/2026-05-24/inventory.csv
 
 ```text
 S3KeySensor(bucket=inventory-batches, key=incoming/{{ ds }}/inventory.csv)
+S3Hook.download_file -> data/current_inventory_batch.csv
 ```
 
 **Вывод:**
 
 - в локальном запуске можно быстро проверить DAG через файл
-- в S3-режиме тот же шаг проверяет object storage key
-- для production меняется endpoint/credentials, логика DAG остается той же
+- в S3-режиме sensor проверяет key в MinIO/S3, а load task скачивает этот же файл
+- для боевого контура меняются endpoint/credentials, логика DAG остается той же
 
 ## 7. Модель / метрики / registry
 
@@ -202,6 +215,7 @@ branch: register_model
 Файлы:
 
 - data validation: [reports/data_validation.md](reports/data_validation.md)
+- validation check: [reports/validation_gate_log.md](reports/validation_gate_log.md)
 - model metrics: [reports/model_metrics.md](reports/model_metrics.md)
 - compare log: [reports/airflow_compare_log.md](reports/airflow_compare_log.md)
 - registry log: [reports/airflow_registry_log.md](reports/airflow_registry_log.md)
@@ -216,11 +230,12 @@ Terraform лежит в [infra/](infra/).
 - storage manifest для batch-файлов
 - artifact/registry path для моделей и метрик
 - Airflow manifest с `dag_id`
+- manifest связки pipeline: S3 key -> рабочий batch -> validation -> branch join
 - destroy path, т.е. infra можно удалить
 
 ![terraform plan](screenshots/21.png)
 
-`21.png` - `terraform plan`: создаются 3 local resources для storage / MLflow-like registry / Airflow manifest.
+`21.png` - `terraform plan`: создаются local resources для storage / MLflow-like registry / Airflow manifest / связки pipeline.
 
 Файлы и скрины:
 
@@ -240,7 +255,7 @@ Terraform лежит в [infra/](infra/).
 
 Полная таблица есть в notebook section 5:
 
-[HW9_Design_НовиковИван.ipynb](HW9_Design_НовиковИван.ipynb)
+[HW9_Design_НовиковИван_last.ipynb](HW9_Design_НовиковИван_last.ipynb)
 
 Короткая версия:
 
@@ -257,7 +272,7 @@ Terraform лежит в [infra/](infra/).
 Риски:
 
 - batch не пришел -> sensor timeout -> skip training + alert
-- batch плохой по схеме -> validation fail -> train не запускаем
+- batch плохой по схеме -> validation fail -> `ValueError` -> train не запускаем
 - новая модель хуже baseline -> `skip_deploy`
 - latency выросла -> MDD test -> архитектурное решение через ADR
 - Terraform удаляет лишнее -> смотрим `plan` до apply/destroy
@@ -308,8 +323,8 @@ CI/CD тут не обучает модель каждый день.
 Он проверяет:
 
 - Python dependencies
-- `python -m compileall -q src dags scripts`
-- генерацию demo reports
+- `python -m compileall -q src dags`
+- простой smoke-check модели через `src/`
 - `terraform fmt`
 - `terraform init`
 - `terraform validate`
@@ -317,7 +332,7 @@ CI/CD тут не обучает модель каждый день.
 
 **Вывод:**
 
-- Airflow - runtime orchestration
+- Airflow - запуск DAG и обучение по расписанию/файлу
 - GitHub Actions - проверка кода и конфигов
 - эти роли не смешиваю
 
@@ -342,8 +357,18 @@ CI/CD тут не обучает модель каждый день.
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-PYTHONPATH=. .venv/bin/python scripts/generate_demo_artifacts.py
-python3 -m compileall -q src dags scripts
+python3 -m compileall -q src dags
+PYTHONPATH=. .venv/bin/python - <<'PY'
+from src.inventory_data import make_demo_inventory, validate_inventory
+from src.inventory_train import train_model
+from src.inventory_evaluate import evaluate_model, compare_with_baseline
+
+batch_path = make_demo_inventory()
+assert validate_inventory(batch_path)["status"] == "pass"
+train_model(batch_path)
+assert evaluate_model()["new_mape"] <= 15
+assert compare_with_baseline() in {"register_model", "skip_deploy"}
+PY
 ```
 
 Airflow + MinIO:
@@ -380,8 +405,9 @@ terraform show -no-color tfdestroy > ../reports/terraform_destroy_plan.txt
 - [x] архитектуры ML pipeline сравнены в notebook
 - [x] выбран batch + reactive retraining
 - [x] Airflow DAG есть и запускается
-- [x] S3-like tracking показан через MinIO + `S3KeySensor`
+- [x] S3-like tracking показан через MinIO + `S3KeySensor`, найденный object идет в active batch для train
 - [x] есть validation / train / evaluate / compare / register / skip
+- [x] validation fail останавливает обучение до `train_model`
 - [x] Terraform plan и destroy plan сохранены
 - [x] SLI/SLO на business / model-code / infra уровнях есть
 - [x] MDD сделан через два latency distribution + p-value

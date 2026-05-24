@@ -2,6 +2,6 @@
   "model_name": "inventory_stock_model",
   "model_version": "v1",
   "stage": "production_candidate",
-  "run_id": "run_20260524_155133",
+  "run_id": "run_20260524_201921",
   "metric": "mape=1.294"
 }

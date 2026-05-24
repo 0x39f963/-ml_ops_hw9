@@ -7,9 +7,10 @@
 - storage для batch-файлов (`inventory-batches`)
 - artifact storage для моделей / метрик
 - manifest для Airflow DAG
+- manifest связки pipeline: S3 key -> рабочий batch -> validation -> branch join
 - local registry/MLflow-like путь
 
-В этом ДЗ public cloud не поднимаю. Terraform показывает декларативную схему и путь удаления. В production provider меняется на AWS/Yandex/GCP, а структура остается такой же.
+В этом ДЗ public cloud не поднимаю. Terraform показывает декларативную схему и путь удаления. В реальной среде provider меняется на AWS/Yandex/GCP, а структура остается такой же.
 
 ## Проверка
 
@@ -34,5 +35,6 @@ terraform destroy
 **Вывод:**
 
 - инфраструктура не считается вечной
+- batch path / validation / branch join описаны декларативно в Terraform manifest
 - перед apply/destroy надо смотреть plan
 - `terraform.tfstate` и `.terraform/` не идут в сдачу

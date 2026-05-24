@@ -41,6 +41,27 @@ Terraform will perform the following actions:
       + id                   = (known after apply)
     }
 
+  # local_file.pipeline_contract_manifest will be created
+  + resource "local_file" "pipeline_contract_manifest" {
+      + content              = <<-EOT
+            s3_bucket=inventory-batches
+            s3_key_template=incoming/{{ ds }}/inventory.csv
+            active_batch_path=data/current_inventory_batch.csv
+            validation_fail_policy=stop_before_train
+            branch_join_trigger_rule=none_failed_min_one_success
+        EOT
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = "../.infra_artifacts/dev/pipeline_contract_manifest.txt"
+      + id                   = (known after apply)
+    }
+
   # local_file.storage_manifest will be created
   + resource "local_file" "storage_manifest" {
       + content              = <<-EOT
@@ -59,14 +80,10 @@ Terraform will perform the following actions:
       + id                   = (known after apply)
     }
 
-Plan: 3 to add, 0 to change, 0 to destroy.
+Plan: 4 to add, 0 to change, 0 to destroy.
 
 Changes to Outputs:
-  + airflow_manifest_path = "../.infra_artifacts/dev/airflow_manifest.txt"
-  + mlflow_manifest_path  = "../.infra_artifacts/dev/mlflow_manifest.txt"
-  + storage_manifest_path = "../.infra_artifacts/dev/storage_manifest.txt"
-
-─────────────────────────────────────────────────────────────────────────────
-
-Note: You didn't use the -out option to save this plan, so Terraform can't
-guarantee to take exactly these actions if you run "terraform apply" now.
+  + airflow_manifest_path           = "../.infra_artifacts/dev/airflow_manifest.txt"
+  + mlflow_manifest_path            = "../.infra_artifacts/dev/mlflow_manifest.txt"
+  + pipeline_contract_manifest_path = "../.infra_artifacts/dev/pipeline_contract_manifest.txt"
+  + storage_manifest_path           = "../.infra_artifacts/dev/storage_manifest.txt"
