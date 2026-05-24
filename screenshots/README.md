@@ -10,18 +10,6 @@
 - Terraform plan
 - MDD: latency plot + p-value
 
-Сначала смотреть эти:
-
-| скрин | зачем |
-|---|---|
-| [11.png](11.png) | MinIO bucket + входной batch |
-| [15.png](15.png) | compare task + `register_model` |
-| [16.png](16.png) | структура DAG в CLI |
-| [19.png](19.png) | успешный DAG run в Airflow UI |
-| [21.png](21.png) | Terraform plan |
-| [22.png](22.png) | схема Airflow pipeline |
-| [23.png](23.png) | MDD latency distribution |
-
 ## 1. Подготовка окружения
 
 ![установка зависимостей](1.png)
@@ -34,7 +22,7 @@
 
 `2.png` - зависимости установлены, проект готов к запуску локальных проверок.
 
-`1.png` и `2.png` частично дублируются. В корневом README оставил скрины ближе к Airflow / MinIO / Terraform.
+`1.png` и `2.png` - шаг с Python-окружением.
 
 ![артефакты reports](3.png)
 
@@ -78,9 +66,7 @@
 
 ![Airflow logs](10.png)
 
-`10.png` - diagnostic screen с логами Airflow webserver.
-
-Это просто лог webserver-а. Сам запуск DAG ниже, там полезнее.
+`10.png` - открыт лог Airflow webserver.
 
 ![batch в MinIO](11.png)
 
@@ -189,16 +175,3 @@ ADR: [../adr/0001-latency-mdd-decision.md](../adr/0001-latency-mdd-decision.md)
 - latency выросла статистически значимо
 - решение: добавить cache перед чтением истории остатков
 - тяжелые lag features перенести в batch preprocessing
-
-## 7. Второстепенные скрины
-
-- `1.png`, `2.png` - подготовка окружения, можно смотреть как старт
-- `4.png`, `6.png` - промежуточные попытки до финальной загрузки batch
-- `10.png` - webserver logs, просто диагностика
-
-Если смотреть быстро, то вот эти:
-
-- Airflow: `15.png`, `16.png`, `19.png`
-- S3/MinIO: `9.png`, `11.png`, `18.png`
-- Terraform: `20.png`, `21.png`
-- MDD: `23.png`
