@@ -6,6 +6,8 @@ Generated at: 2026-05-24 17:22:41 MSK
 - local demo path: `data/demo_inventory_batch.csv`
 - production switch: `DZ9_USE_S3_SENSOR=1`
 - production sensor: `S3KeySensor(bucket=inventory-batches, key=incoming/{{ ds }}/inventory.csv)`
-- result: file found, DAG can continue
+- S3 evidence: `s3://inventory-batches/incoming/2026-05-24/inventory.csv`
+- log line: `Poking for key : s3://inventory-batches/incoming/2026-05-24/inventory.csv`
+- result: `Success criteria met. Exiting.`
 
-**Вывод:** в учебном запуске sensor смотрит локальный файл. В production тот же шаг заменяется на S3 bucket/key.
+**Вывод:** в учебном запуске можно использовать локальный файл. В S3-режиме тот же task ждет объект в bucket `inventory-batches`.

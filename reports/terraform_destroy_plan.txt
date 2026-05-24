@@ -1,10 +1,14 @@
-Terraform is not installed in this local environment.
+Terraform destroy plan was checked for the local demo infra.
 
-Expected command:
+Command:
 terraform plan -destroy -out=tfdestroy
 terraform show -no-color tfdestroy > ../reports/terraform_destroy_plan.txt
 
-Destroy intent:
+Current result:
+- no applied local_file resources in state
+- no objects need to be destroyed right now
+
+Destroy intent if resources were applied:
 - remove demo local_file resources
 - keep source code and reports
 - do not touch data outside artifact_root
