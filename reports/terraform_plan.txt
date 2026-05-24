@@ -1,0 +1,15 @@
+Terraform is not installed in this local environment.
+
+Expected command:
+terraform plan -out=tfplan
+terraform show -no-color tfplan > ../reports/terraform_plan.txt
+
+Demo planned resources:
+- local_file.storage_manifest
+- local_file.mlflow_manifest
+- local_file.airflow_manifest
+
+Plan intent:
+- create local demo manifests for storage / registry / airflow config
+- no public cloud resources
+- no secrets

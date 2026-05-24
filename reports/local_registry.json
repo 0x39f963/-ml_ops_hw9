@@ -1,0 +1,7 @@
+{
+  "model_name": "inventory_stock_model",
+  "model_version": "v1",
+  "stage": "production_candidate",
+  "run_id": "run_20260524_143000",
+  "metric": "mape=1.294"
+}

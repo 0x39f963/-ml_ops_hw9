@@ -1,0 +1,10 @@
+Terraform is not installed in this local environment.
+
+Expected command:
+terraform plan -destroy -out=tfdestroy
+terraform show -no-color tfdestroy > ../reports/terraform_destroy_plan.txt
+
+Destroy intent:
+- remove demo local_file resources
+- keep source code and reports
+- do not touch data outside artifact_root
