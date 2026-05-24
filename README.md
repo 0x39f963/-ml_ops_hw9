@@ -49,7 +49,7 @@ docker compose up -d
 UI:
 
 ```text
-http://localhost:8080
+http://localhost:18080
 login: admin
 password: admin
 ```
@@ -58,6 +58,15 @@ password: admin
 
 - `wait_for_inventory_batch` - локальный FileSensor для учебного запуска
 - `DZ9_USE_S3_SENSOR=1` - тот же task использует `S3KeySensor` для production S3/Object Storage
+- MinIO в `docker-compose.yml` дает локальный S3-like bucket `inventory-batches`
+
+MinIO UI:
+
+```text
+http://localhost:19001
+login: minioadmin
+password: minioadmin
+```
 
 Evidence:
 
