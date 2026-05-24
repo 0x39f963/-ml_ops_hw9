@@ -134,8 +134,6 @@ def write_validation_report(report: dict[str, object]) -> Path:
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     path = REPORTS_DIR / "data_validation.md"
     lines = [
-        "Generated at: 2026-05-24 17:22:41 MSK",
-        "",
         "# Data validation",
         "",
         f"- status: `{report['status']}`",

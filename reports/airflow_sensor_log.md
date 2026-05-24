@@ -1,5 +1,3 @@
-Generated at: 2026-05-24 17:22:41 MSK
-
 # Airflow sensor log
 
 - task_id: `wait_for_inventory_batch`

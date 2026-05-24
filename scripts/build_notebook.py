@@ -22,8 +22,6 @@ cells = [
         """
 # Домашнее задание 9. Проектирование ML-системы для расчета складских запасов
 
-Generated at: 2026-05-24 17:22:41 MSK
-
 **Коротко:** делаю batch + reactive retraining pipeline.
 
 Airflow отвечает за ML-процесс. CI/CD проверяет код и Terraform. ADR фиксирует MDD-решение.

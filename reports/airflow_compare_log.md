@@ -1,5 +1,3 @@
-Generated at: 2026-05-24 17:22:41 MSK
-
 # Compare task log
 
 - policy: `new_mape <= 15.0` and `new_mape <= baseline_mape`

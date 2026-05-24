@@ -25,9 +25,7 @@ def write_text(path: Path, text: str) -> None:
 def make_airflow_evidence() -> None:
     write_text(
         REPORTS_DIR / "airflow_sensor_log.md",
-        """Generated at: 2026-05-24 17:22:41 MSK
-
-# Airflow sensor log
+        """# Airflow sensor log
 
 - task_id: `wait_for_inventory_batch`
 - local demo path: `data/demo_inventory_batch.csv`
@@ -40,9 +38,7 @@ def make_airflow_evidence() -> None:
     )
     write_text(
         REPORTS_DIR / "airflow_task_logs.md",
-        """Generated at: 2026-05-24 17:22:41 MSK
-
-# Airflow task logs
+        """# Airflow task logs
 
 | task | result |
 |---|---|
@@ -124,9 +120,7 @@ def make_mdd() -> None:
     decision = "add cache before stock history read" if p_value < 0.05 else "keep architecture and monitor"
     write_text(
         REPORTS_DIR / "mdd_test_result.md",
-        f"""Generated at: 2026-05-24 17:22:41 MSK
-
-# MDD latency test
+        f"""# MDD latency test
 
 - metric: `latency_ms`
 - reference rows: `{len(ref)}`
@@ -144,9 +138,7 @@ def make_mdd() -> None:
     )
     write_text(
         ROOT / "adr" / "0001-latency-mdd-decision.md",
-        f"""Generated at: 2026-05-24 17:22:41 MSK
-
-# ADR 0001: решение по росту latency прогноза запасов
+        f"""# ADR 0001: решение по росту latency прогноза запасов
 
 ## Status
 

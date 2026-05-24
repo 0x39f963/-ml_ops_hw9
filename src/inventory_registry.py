@@ -20,8 +20,6 @@ def register_model() -> dict[str, str]:
     (REPORTS_DIR / "local_registry.json").write_text(json.dumps(row, indent=2), encoding="utf-8")
 
     lines = [
-        "Generated at: 2026-05-24 17:22:41 MSK",
-        "",
         "# Registry log",
         "",
         "- action: `register_model`",
@@ -42,8 +40,6 @@ def skip_deploy(reason: str = "metric gate failed") -> Path:
     path.write_text(
         "\n".join(
             [
-                "Generated at: 2026-05-24 17:22:41 MSK",
-                "",
                 "# Skip deploy",
                 "",
                 f"- reason: `{reason}`",

@@ -42,8 +42,6 @@ def evaluate_model() -> dict[str, float]:
     (REPORTS_DIR / "model_metrics.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
 
     lines = [
-        "Generated at: 2026-05-24 17:22:41 MSK",
-        "",
         "# Model metrics",
         "",
         f"- new_mape: `{result['new_mape']:.3f}`",
@@ -63,8 +61,6 @@ def compare_with_baseline(max_mape: float = 15.0) -> str:
     ok = metrics["new_mape"] <= max_mape and metrics["new_mape"] <= metrics["baseline_mape"]
     branch = "register_model" if ok else "skip_deploy"
     lines = [
-        "Generated at: 2026-05-24 17:22:41 MSK",
-        "",
         "# Compare task log",
         "",
         f"- policy: `new_mape <= {max_mape}` and `new_mape <= baseline_mape`",
