@@ -23,7 +23,7 @@ MDD фиксирует решение через статистику
 - код модели: [src/](src/)
 - synthetic data: [data/](data/)
 - Terraform: [infra/](infra/)
-- evidence / логи / отчеты: [reports/](reports/)
+- логи / отчеты: [reports/](reports/)
 - скриншоты: [screenshots/](screenshots/) + карта [screenshots/README.md](screenshots/README.md)
 - MDD decision: [adr/0001-latency-mdd-decision.md](adr/0001-latency-mdd-decision.md)
 - CI/CD checks: [.github/workflows/dz9-checks.yml](.github/workflows/dz9-checks.yml)
@@ -31,7 +31,7 @@ MDD фиксирует решение через статистику
 
 ## 2. Карта критериев
 
-| критерий | где смотреть | evidence |
+| критерий | где смотреть | скрины / файлы |
 |---|---|---|
 | архитектура ML-конвейера | notebook section 1 / этот README | batch + reactive retraining через sensor |
 | Airflow DAG | [dags/inventory_retrain_dag.py](dags/inventory_retrain_dag.py) | [screenshots/19.png](screenshots/19.png), [reports/airflow_task_logs.md](reports/airflow_task_logs.md) |
@@ -133,7 +133,7 @@ wait_for_inventory_batch
 
 `19.png` - Airflow UI: DAG run завершился успешно, ветка `register_model` прошла, `skip_deploy` пропущен как альтернативная ветка.
 
-Дополнительные evidence:
+Еще по Airflow:
 
 - структура DAG в CLI: [screenshots/16.png](screenshots/16.png)
 - DAG появился в Airflow UI: [screenshots/8.png](screenshots/8.png)
@@ -225,7 +225,7 @@ Terraform лежит в [infra/](infra/).
 
 `21.png` - `terraform plan`: создаются 3 local resources для storage / MLflow-like registry / Airflow manifest.
 
-Evidence:
+Файлы и скрины:
 
 - [reports/terraform_plan.txt](reports/terraform_plan.txt)
 - [reports/terraform_destroy_plan.txt](reports/terraform_destroy_plan.txt)
@@ -292,7 +292,7 @@ decision: add cache before stock history read
 
 ![MDD latency](screenshots/23.png)
 
-`23.png` - latency у новой версии заметно выше reference. По p-value рост считаю статистически значимым.
+`23.png` - latency у новой версии заметно выше reference. p-value ниже 0.05, значит фиксирую это в ADR.
 
 **Итого по MDD:**
 
@@ -312,7 +312,7 @@ CI/CD тут не обучает модель каждый день.
 
 - Python dependencies
 - `python -m compileall -q src dags scripts`
-- генерацию demo evidence
+- генерацию demo reports
 - `terraform fmt`
 - `terraform init`
 - `terraform validate`
@@ -328,9 +328,9 @@ CI/CD тут не обучает модель каждый день.
 
 Полная карта: [screenshots/README.md](screenshots/README.md)
 
-Основные скрины для сдачи:
+Скрины, которые стоит открыть:
 
-| скрин | что доказывает |
+| скрин | что на нем |
 |---|---|
 | [screenshots/11.png](screenshots/11.png) | MinIO bucket + batch file |
 | [screenshots/15.png](screenshots/15.png) | metric gate + register_model |
@@ -385,7 +385,7 @@ terraform show -no-color tfdestroy > ../reports/terraform_destroy_plan.txt
 - [x] Airflow DAG есть и запускается
 - [x] S3-like tracking показан через MinIO + `S3KeySensor`
 - [x] есть validation / train / evaluate / compare / register / skip
-- [x] Terraform plan и destroy evidence сохранены
+- [x] Terraform plan и destroy plan сохранены
 - [x] SLI/SLO на business / model-code / infra уровнях есть
 - [x] MDD сделан через два latency distribution + p-value
 - [x] ADR фиксирует архитектурное решение
