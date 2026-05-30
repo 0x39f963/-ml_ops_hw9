@@ -1,16 +1,16 @@
 # ДЗ-9. Проектирование ML-системы для расчета складских запасов
 
-Это финальный стенд для ДЗ-9 по развертыванию ML моделей.
+Стенд для ДЗ-9 по проектированию и развертыванию ML-системы.
 
-Идея простая:
+В процессе выполнения домашнего задания собраны следующие части:
 
 ```text
-Airflow управляет ML-процессом
-CI/CD проверяет код / DAG / Terraform
-Terraform описывает infra
-registry хранит факт обучения
-SLI/SLO говорят когда вмешиваться
-MDD фиксирует решение через статистику
+Airflow: запуск CT loop
+CI/CD: проверка кода, DAG и Terraform
+Terraform: описание инфраструктурных ресурсов
+registry: фиксация обученной версии модели
+SLI/SLO: правила контроля качества системы
+MDD: статистическая проверка изменения latency
 ```
 
 ## 1. Что сделано
@@ -82,13 +82,13 @@ DZ9/
 
 ## 4. Архитектура
 
-Выбран вариант:
+Выбранная архитектура:
 
 ```text
 batch retraining + reactive trigger через S3/File sensor + metric gate + registry
 ```
 
-Почему так:
+Достоинство выбранной архитектуры:
 
 - складские остатки / продажи / поставки обычно приходят batch-ами
 - задержка в минуты/часы норм для задачи пополнения склада
@@ -104,7 +104,7 @@ batch retraining + reactive trigger через S3/File sensor + metric gate + re
 
 DAG: [dags/inventory_retrain_dag.py](dags/inventory_retrain_dag.py)
 
-Главная цепочка:
+Цепочка DAG:
 
 ```text
 wait_for_inventory_batch
@@ -117,7 +117,7 @@ wait_for_inventory_batch
   -> finish
 ```
 
-Что важно:
+Состав DAG:
 
 - `wait_for_inventory_batch` ждет новый batch
 - `load_inventory_data` берет именно найденный batch и кладет его в `data/current_inventory_batch.csv`
@@ -128,20 +128,20 @@ wait_for_inventory_batch
 - `compare_with_baseline` решает ветку через `BranchPythonOperator`
 - `register_model` пишет факт обучения в локальный registry
 - `skip_deploy` оставляет старую модель, если новая хуже
-- `finish` склеивает ветки через `none_failed_min_one_success`
+- `finish` объединяет ветки через `none_failed_min_one_success`
 
-**Что добавил после проверки:**
+**Исправления в DAG:**
 
-- S3/File sensor теперь не просто сигналит о наличии файла
+- S3/File sensor не только проверяет наличие файла
 - `load_inventory_data` копирует локальный файл или скачивает S3-файл через `S3Hook`
-- validation теперь реально стопает обучение плохого batch
-- join после branch поправлен через trigger rule, чтобы успешная ветка нормально закрывала DAG
+- validation останавливает обучение при плохом batch
+- join после branch настроен через trigger rule, чтобы успешная ветка закрывала DAG
 
 ![успешный Airflow run](screenshots/19.png)
 
 `19.png` - Airflow UI: DAG run завершился успешно, ветка `register_model` прошла, `skip_deploy` пропущен как альтернативная ветка.
 
-Еще по Airflow:
+Дополнительные артефакты Airflow:
 
 - структура DAG в CLI: [screenshots/16.png](screenshots/16.png)
 - DAG появился в Airflow UI: [screenshots/8.png](screenshots/8.png)
@@ -156,7 +156,7 @@ wait_for_inventory_batch
 - локальный режим - `FileSensor`, чтобы DAG можно было прогнать без S3
 - S3 режим - `DZ9_USE_S3_SENSOR=1`, тогда используется `S3KeySensor`
 
-MinIO тут играет роль локального S3:
+MinIO используется как локальный S3:
 
 ```text
 bucket: inventory-batches
@@ -179,7 +179,7 @@ S3KeySensor(bucket=inventory-batches, key=incoming/{{ ds }}/inventory.csv)
 S3Hook.download_file -> data/current_inventory_batch.csv
 ```
 
-**Вывод:**
+**Результат:**
 
 - в локальном запуске можно быстро проверить DAG через файл
 - в S3-режиме sensor проверяет key в MinIO/S3, а load task скачивает этот же файл
@@ -187,11 +187,11 @@ S3Hook.download_file -> data/current_inventory_batch.csv
 
 ## 7. Модель / метрики / registry
 
-Модель тут не главная часть ДЗ, поэтому сделана просто:
+Модель оставлена минимальной, чтобы проверить весь ML-конвейер:
 
 - признаки: `store_id`, `sku_id`, `stock_qty`, `sales_qty`, `delivery_qty`, `day_of_week`
 - target: прогноз остатка на следующий день
-- модель: простая regression pipeline
+- модель: regression pipeline
 - baseline: naive-подход для сравнения
 
 Метрики из [reports/model_metrics.md](reports/model_metrics.md):
@@ -244,9 +244,9 @@ Terraform лежит в [infra/](infra/).
 - [screenshots/20.png](screenshots/20.png) - `terraform init` / `validate`
 - [screenshots/21.png](screenshots/21.png) - planned resources
 
-**Вывод:**
+**Результат:**
 
-- public cloud тут не поднимаю
+- public cloud не используется
 - Terraform нужен для декларативного описания ресурсов
 - `plan -destroy` показывает путь удаления
 - `tfstate`, `.terraform/`, секреты и token-ы в сдачу не идут
@@ -306,7 +306,7 @@ decision: add cache before stock history read
 
 `23.png` - latency у новой версии заметно выше reference. p-value ниже 0.05, значит фиксирую это в ADR.
 
-**Итого по MDD:**
+**Результат MDD:**
 
 - H0: latency не выросла значимо
 - H1: latency выросла значимо
@@ -318,7 +318,7 @@ decision: add cache before stock history read
 
 Workflow: [.github/workflows/dz9-checks.yml](.github/workflows/dz9-checks.yml)
 
-CI/CD тут не обучает модель каждый день.
+CI/CD не запускает ежедневное обучение модели.
 
 Он проверяет:
 
@@ -330,7 +330,7 @@ CI/CD тут не обучает модель каждый день.
 - `terraform validate`
 - `terraform plan`
 
-**Вывод:**
+**Результат:**
 
 - Airflow - запуск DAG и обучение по расписанию/файлу
 - GitHub Actions - проверка кода и конфигов
